@@ -1,0 +1,223 @@
+1. npm init -y
+2. create folders
+    /app
+        /controllers
+        /models
+    /config
+        /database.js
+        /routes.js
+3. create files
+    /index.js
+4. npm install --save express mongoose
+
+5. run server to listen on a port 
+const express = require('express')
+const app = express()
+const port = 3030
+
+app.listen(port, ()=>{
+    console.log('listening on port', port)
+})
+
+6. Establish db connection
+
+const mongoose = require('mongoose')
+
+const connectDB = ()=>{
+    mongoose.connect('mongodb://localhost:27017/july-contact-manager',{ useNewUrlParser: true, useUnifiedTopology: true })
+        .then(()=>{
+            console.log('connected to db')
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
+}
+
+module.exports = connectDB
+
+7. invoke the function connectDB in index
+
+const connectDB = require('./config/database')
+connectDB()
+
+8. enables json parse (index.js)
+
+// express to parse json
+app.use(express.json())
+
+9. work on model -
+    /models
+        /contact.js
+
+    - create schema
+
+    const mongoose = require('mongoose')
+const Schema = mongoose.Schema
+
+const contactSchema = new Schema({
+    name : {
+        type : String,
+        required : true
+    },
+    email : {
+        type : String
+    },
+    mobile : {
+        type : String,
+        required : true,
+        minlength : 10,
+        maxlength : 10
+    },
+    category : {
+        type : String,
+        required : true,
+        enum : ['work', 'home']
+    }
+})
+
+
+    - create a model
+
+const Contact = mongoose.model('Contact', contactSchema)
+
+module.exports = Contact 
+
+10. create routes.js
+const express = require('express')
+const router = express.Router()
+
+module.exports=router
+
+11. required router in index.js
+app.use('/',router)
+
+12. created contactsController.js file
+
+13. we required contactsController in routes.js
+const contactsController = require('../app/controllers/contactsController')
+
+14. setting up list route
+    in routes.js
+    router.get('/contacts',contactsController.list)
+
+    contactsController.js
+    const Contact = require('../models/contact')
+
+    module.exports.list = (req,res) =>{
+        Contact.find()
+            .then((contacts)=>{
+                res.json(contacts)
+            })
+            .catch((err)=>{
+                res.json(err)
+            })
+    }
+
+15. setting up create route
+    in routes.js
+    router.post('/contacts',contactsController.create)
+
+    contactsController.js
+    module.exports.create = (req,res) =>{
+        const {body} = req
+        const contact = new Contact(body)
+        contact.save()
+            .then((contact)=>{
+                res.json({
+                    contact,
+                    notice : 'successfully created a contact'
+                })
+            })
+            .catch((err)=>{
+                res.json(err)
+            })
+    }
+
+16. setting up show route
+    in routes.js
+    router.get('/contacts/:id',contactsController.show)
+
+    contactsController.js
+    module.exports.show = (req,res)=>{
+        const id = req.params.id
+        Contact.findById(id)
+            .then((contact)=>{
+                if(contact){
+                    res.json(contact)
+                }else{
+                    res.json({})
+                }
+            })
+            .catch((err)=>{
+                res.json(err)
+            })
+    }
+
+17. setting up update route
+    in routes.js
+    router.put('/contacts/:id',contactsController.update)
+
+    contactsController.js
+    module.exports.update = (req,res) =>{
+        const id = req.params.id
+        const body = req.body
+        Contact.findByIdAndUpdate(id, body, {new:true, runValidators:true})
+            .then((contact)=>{
+                if(contact){
+                    res.json(contact)
+                }else{
+                    res.json({})
+                }
+            })
+            .catch((err)=>{
+                res.json(err)
+            })
+    }
+
+18. setting up delete route
+    in routes.js
+    router.delete('/contacts/:id',contactsController.destroy)
+
+    contactsController.js
+    module.exports.destroy = (req,res) =>{
+        const id = req.params.id
+        Contact.findByIdAndRemove(id)
+            .then((contact)=>{
+                if(contact){
+                    res.json(contact)
+                }else{
+                    res.json({})
+                }
+            })
+            .catch((err)=>{
+                res.json(err)
+            })
+    }
+
+
+inside contact manager folder
+
+npm install --save concurrently
+
+in package.json file
+
+ "scripts": {
+    "app": "concurrently \"nodemon index.js\" \"cd client && npm start\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+
+  npm run app
+
+
+// inside node express
+npm install --save cors
+
+const cors = require('cors')
+
+app.use(cors())
+
+
+    
+
+
+
