@@ -2,7 +2,9 @@ import React from 'react'
 import {Row, Col, Container, Button, Card, ListGroup, ListGroupItem} from 'react-bootstrap'
 import {connect} from 'react-redux'
 import AddContact from './addContact'
-
+import EditContact from './editContact'
+import swal from 'sweetalert'
+import {startContactDelete} from '../../actions/contactActions'
 
 class ContactList extends React.Component{
     constructor(props){
@@ -13,11 +15,13 @@ class ContactList extends React.Component{
         
     }
 
-      componentDidUpdate(prevProps,prevState) {
-          console.log('prevProps', prevProps)
-          console.log('prevState', prevState)
-
-       }
+    componentDidUpdate(prevProps, prevState){
+        if (prevProps.contacts != this.props.contacts){
+            this.setState({
+                contacts : this.props.contacts
+            })
+        }
+    }
 
     handleAllContacts = () => {
         console.log('clicked')
@@ -47,6 +51,26 @@ class ContactList extends React.Component{
         })
     }
 
+    handleDelete = (id) => {
+        swal({
+            title: "Are you sure?",
+            text: "Once deleted, you will not be able to recover this Contact!",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+          })
+          .then((willDelete) => {
+            if (willDelete) {
+              this.props.dispatch(startContactDelete(id))
+              swal("Poof! Your Contact has been deleted!", {
+                icon: "success",
+              });
+            } else {
+              swal("Your Contact is safe!");
+            }
+          });
+    }
+
     render(){
         console.log('renderProps',this.props)
 
@@ -73,36 +97,7 @@ class ContactList extends React.Component{
                         </Col>
                         <Col className='col-lg-5 offset-lg-2'>
                             <ul>
-                                {
-                                    (this.state.contacts.length === 0) ? (
-                                        this.state.contacts.map((contact)=>{
-                                            return (
-                                                <li style={{listStyleType:'none'}} key={contact._id}>
-                                                    <Card className='mb-2' border={(contact.personalCategory==='family' && 'primary') || (contact.personalCategory==='friends' && 'danger') || (contact.personalCategory==='others' && 'info')} style={{ width:'18rem'}}>
-                                                    <Card.Body>
-                                                    <p>Name - {contact.name}</p>
-                                                    <p>Email - {contact.email}</p>
-                                                    <p>Mobile - {contact.mobile}</p>
-                                                    <p>Category - {contact.category}</p>
-                                                    <p>Personal - {contact.personalCategory}</p>
-                                                    <footer>
-                                                    <Row>
-                                                        <Col className='col-lg-4 offset-lg-2'>
-                                                           <Button> Edit </Button>
-                                                        </Col>
-                                                        <Col className='col-lg-3'>
-                                                            <Button variant='danger'> Delete </Button>
-                                                        </Col>
-                                                    </Row>
-                                                    </footer>
-                                                    </Card.Body>
-                                                    </Card>
-                                                    <br/>
-                                                </li>
-                                                 )
-                                                })
-                                          ) : (
-                                this.state.contacts.map((contact)=>{
+                                {this.state.contacts.map((contact)=>{
                                     return (
                                         <li style={{listStyleType:'none'}} key={contact._id}>
                                             <Card className='mb-2' border={(contact.personalCategory==='family' && 'primary') || (contact.personalCategory==='friends' && 'danger') || (contact.personalCategory==='others' && 'info')} style={{ width:'18rem'}}>
@@ -115,10 +110,10 @@ class ContactList extends React.Component{
                                             <footer>
                                             <Row>
                                                 <Col className='col-lg-4 offset-lg-2'>
-                                                   <Button> Edit </Button>
+                                                   <EditContact contactInfo={contact}/>
                                                 </Col>
                                                 <Col className='col-lg-3'>
-                                                    <Button variant='danger'> Delete </Button>
+                                                    <Button variant='danger' onClick={()=>{this.handleDelete(contact._id)}}> Delete </Button>
                                                 </Col>
                                             </Row>
                                             </footer>
@@ -128,7 +123,7 @@ class ContactList extends React.Component{
                                         </li>
                                     )
                                 })
-                                )
+                                
                                 }
                             </ul>
                         </Col>

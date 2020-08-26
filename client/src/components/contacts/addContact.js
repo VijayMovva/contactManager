@@ -1,16 +1,16 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import { startAddContact } from '../../actions/contactActions'
+import { startAddContact, startEditContact } from '../../actions/contactActions'
 
 class AddContact extends React.Component{
     constructor(props){
         super(props)
         this.state = {
-            name : '',
-            email : '',
-            mobile : '',
-            category : '',
-            personalCategory: ''
+            name : (props.contactInfo) ? props.contactInfo.name : '',
+            email : (props.contactInfo) ? props.contactInfo.email : '',
+            mobile : (props.contactInfo) ? props.contactInfo.mobile : '',
+            category : (props.contactInfo) ? props.contactInfo.category : '',
+            personalCategory: (props.contactInfo) ? props.contactInfo.personalCategory : ''
         }
     }
 
@@ -27,8 +27,18 @@ class AddContact extends React.Component{
             category : this.state.category,
             personalCategory : this.state.personalCategory
         }
-        console.log(contactData)
+        if(this.props.contactInfo){
+            this.props.dispatch(startEditContact(contactData,this.props.contactInfo._id))
+        }else{
         this.props.dispatch(startAddContact(contactData))
+        }
+        this.setState({
+            name : '',
+            email : '',
+            mobile : '',
+            category : '',
+            personalCategory : ''
+        })
     }
 
     render(){

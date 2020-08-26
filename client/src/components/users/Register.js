@@ -52,7 +52,7 @@ class Register extends React.Component{
 
                                 <div className='form-group'>
                                 <label htmlFor='password'>Password</label>
-                                <input placeholder='Password' type='password' value={this.state.password} onChange={this.handleChange} id='password' className='form-control' />
+                                <input placeholder='Password' name='password' type='password' value={this.state.password} onChange={this.handleChange} id='password' className='form-control' />
                                 </div>
 
                                 <input type='submit' className='btn btn-primary' />
